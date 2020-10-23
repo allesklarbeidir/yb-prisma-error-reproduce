@@ -19,6 +19,9 @@ declare global {
 }
 
 export interface NexusGenInputs {
+  DeleteKeyValuePairInput: { // input type
+    name: string; // String!
+  }
   RegisterKeyValuePairInput: { // input type
     description?: string | null; // String
     name: string; // String!
@@ -29,6 +32,9 @@ export interface NexusGenEnums {
 }
 
 export interface NexusGenRootTypes {
+  DeleteKeyValuePairPayload: { // root type
+    keyvaluepair: NexusGenRootTypes['KeyValuePair']; // KeyValuePair!
+  }
   KeyValuePair: { // root type
     description?: string | null; // String
     name: string; // String!
@@ -46,16 +52,21 @@ export interface NexusGenRootTypes {
 }
 
 export interface NexusGenAllTypes extends NexusGenRootTypes {
+  DeleteKeyValuePairInput: NexusGenInputs['DeleteKeyValuePairInput'];
   RegisterKeyValuePairInput: NexusGenInputs['RegisterKeyValuePairInput'];
 }
 
 export interface NexusGenFieldTypes {
+  DeleteKeyValuePairPayload: { // field return type
+    keyvaluepair: NexusGenRootTypes['KeyValuePair']; // KeyValuePair!
+  }
   KeyValuePair: { // field return type
     description: string | null; // String
     name: string; // String!
   }
   Mutation: { // field return type
     _: string; // String!
+    deleteKeyValuePair: NexusGenRootTypes['DeleteKeyValuePairPayload']; // DeleteKeyValuePairPayload!
     registerKeyValuePair: NexusGenRootTypes['RegisterKeyValuePairPayload']; // RegisterKeyValuePairPayload!
   }
   Query: { // field return type
@@ -68,6 +79,9 @@ export interface NexusGenFieldTypes {
 
 export interface NexusGenArgTypes {
   Mutation: {
+    deleteKeyValuePair: { // args
+      input?: NexusGenInputs['DeleteKeyValuePairInput'] | null; // DeleteKeyValuePairInput
+    }
     registerKeyValuePair: { // args
       input?: NexusGenInputs['RegisterKeyValuePairInput'] | null; // RegisterKeyValuePairInput
     }
@@ -79,9 +93,9 @@ export interface NexusGenAbstractResolveReturnTypes {
 
 export interface NexusGenInheritedFields {}
 
-export type NexusGenObjectNames = "KeyValuePair" | "Mutation" | "Query" | "RegisterKeyValuePairPayload";
+export type NexusGenObjectNames = "DeleteKeyValuePairPayload" | "KeyValuePair" | "Mutation" | "Query" | "RegisterKeyValuePairPayload";
 
-export type NexusGenInputNames = "RegisterKeyValuePairInput";
+export type NexusGenInputNames = "DeleteKeyValuePairInput" | "RegisterKeyValuePairInput";
 
 export type NexusGenEnumNames = never;
 

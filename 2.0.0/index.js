@@ -1,105 +1,82 @@
 import { PrismaClient } from "@prisma/client";
 
-import { server } from "./graphqlserver";
-import { createTestClient } from "apollo-server-testing";
-import { gql } from "apollo-server";
+const prisma = new PrismaClient();
 
-(async () => {
+(async (done) => {
 
-    await server.listen(3000);
+    for(let i = 0; i < 100; i++){
+        
+        await Promise.all([1,2,3,4,5,6,7,8,9,10].map(async j => {
 
-    const client = createTestClient(server);
+            // INSERT KeyValuePair
 
-    const {data: fiveIsOkdata, errors: fiveHasNoErrors} = await client.mutate({
-        mutation: gql`
-            mutation {
-                res1: registerKeyValuePair(input: {
-                    name: "ok1",
-                    description: "description"
-                }){ keyvaluepair { name } }
-                res2: registerKeyValuePair(input: {
-                    name: "ok2",
-                    description: "description"
-                }){ keyvaluepair { name } }
-                res3: registerKeyValuePair(input: {
-                    name: "ok3",
-                    description: "description"
-                }){ keyvaluepair { name } }
-                res4: registerKeyValuePair(input: {
-                    name: "ok4",
-                    description: "description"
-                }){ keyvaluepair { name } }
-                res5: registerKeyValuePair(input: {
-                    name: "ok5",
-                    description: "description"
-                }){ keyvaluepair { name } }
+            const kvp = await prisma.keyValuePair.create({
+                data: {
+                    name: `${i}-test-${j}`,
+                    description: `${i}-some-description-${j}`
+                }
+            });
+
+            // INSERT ReferenceKeyValuePair with nested connect (Lookup if exists in a TRANSACTION before inserting)
+
+            const refKvp = await prisma.referenceKeyValuePair.create({
+                data: {
+                    kvp: {
+                        connect: {
+                            name: kvp.name
+                        }
+                    },
+                    someId: `${i}-someid-${j}`
+                }
+            });
+
+            // SELECT ReferenceKeyValuePair
+
+            const selectedRefKvp = await prisma.referenceKeyValuePair.findOne({
+                where: {
+                    kvpId_someId: {
+                        kvpId: kvp.name,
+                        someId: refKvp.someId
+                    }
+                }
+            });
+
+            // DELETE ReferenceKeyValuePair first
+
+            await prisma.referenceKeyValuePair.delete({
+                where: {
+                    kvpId_someId: {
+                        kvpId: selectedRefKvp.kvpId,
+                        someId: selectedRefKvp.someId
+                    }
+                }
+            });
+
+            // DELETE KeyValuePair
+
+            await prisma.keyValuePair.delete({
+                where: {
+                    name: kvp.name
+                }
+            });
+
+
+        }));
+
+        // Send a SELECT command to identify the for-loop runs in the database logs
+
+        await prisma.keyValuePair.findOne({
+            where: {
+                name: `SPLIT---${i}---SPLIT`
             }
-        `
-    });
+        });
+        console.log(`Completed ${i*10} runs.`);
 
-    console.log(JSON.stringify(fiveIsOkdata, null, 4));
-    console.log(JSON.stringify(fiveHasNoErrors, null, 4));
-
-    const {data, errors} = await client.mutate({
-        mutation: gql`
-            mutation {
-                res1: registerKeyValuePair(input: {
-                    name: "fail1",
-                    description: "description"
-                }){ keyvaluepair { name } }
-                res2: registerKeyValuePair(input: {
-                    name: "fail2",
-                    description: "description"
-                }){ keyvaluepair { name } }
-                res3: registerKeyValuePair(input: {
-                    name: "fail3",
-                    description: "description"
-                }){ keyvaluepair { name } }
-                res4: registerKeyValuePair(input: {
-                    name: "fail4",
-                    description: "description"
-                }){ keyvaluepair { name } }
-                res5: registerKeyValuePair(input: {
-                    name: "fail5",
-                    description: "description"
-                }){ keyvaluepair { name } }
-
-                res6: registerKeyValuePair(input: {
-                    name: "fail6",
-                    description: "description"
-                }){ keyvaluepair { name } }
-            }
-        `
-    });
-
-    console.log(JSON.stringify(data, null, 4));
-    console.log(JSON.stringify(errors, null, 4));
+    }
 
 
-    const prisma = new PrismaClient();
+    done()
 
-    const res5 = await Promise.all([1,2,3,4,5].map(i => prisma.keyValuePair.upsert({
-        update: {},
-        where: {
-            name: `test_${i}`
-        },
-        create: {
-            name: `test_${i}`,
-            description: `description_${i}`
-        }
-    })));
-    console.log(res5);
-    
-    const fail6 = await Promise.all([1,2,3,4,5,6].map(i => prisma.keyValuePair.upsert({
-        update: {},
-        where: {
-            name: `test_${i}`
-        },
-        create: {
-            name: `test_${i}`,
-            description: `description_${i}`
-        }
-    })));
-    console.log(fail6);
-
-})();
+})(() => {
+    process.exit(0);
+});

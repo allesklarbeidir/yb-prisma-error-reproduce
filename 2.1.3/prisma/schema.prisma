@@ -17,3 +17,14 @@ model KeyValuePair {
     description String?
 
 }
+
+
+model ReferenceKeyValuePair {
+
+    kvp KeyValuePair @relation(fields: [kvpId], references: [name])
+    kvpId String
+
+    someId String
+
+    @@id([kvpId, someId])
+}

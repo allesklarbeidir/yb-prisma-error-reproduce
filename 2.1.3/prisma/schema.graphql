@@ -2,6 +2,14 @@
 ### Do not make changes to this file directly
 
 
+input DeleteKeyValuePairInput {
+  name: String!
+}
+
+type DeleteKeyValuePairPayload {
+  keyvaluepair: KeyValuePair!
+}
+
 type KeyValuePair {
   description: String
   name: String!
@@ -9,6 +17,7 @@ type KeyValuePair {
 
 type Mutation {
   _: String!
+  deleteKeyValuePair(input: DeleteKeyValuePairInput): DeleteKeyValuePairPayload!
   registerKeyValuePair(input: RegisterKeyValuePairInput): RegisterKeyValuePairPayload!
 }
 
